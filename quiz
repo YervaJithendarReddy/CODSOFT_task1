@@ -1,0 +1,168 @@
+import tkinter as tk
+from tkinter import messagebox
+
+class QuizApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Quiz Game")
+        self.score = 0
+        self.current_question = 0
+        
+        self.questions = [
+            {
+                "question": "What is the capital of France?",
+                "options": ["Paris", "London", "Berlin"],
+                "correct": "Paris"
+            },
+            {
+                "question": "What is 2 + 2?",
+                "options": ["3", "4", "5"],
+                "correct": "4"
+            },
+            {
+                "question": "In which field ,Oscar award are distributed?",
+                "options": ["Educatio","Sports","Cinema"],
+                "correct": "Cinema"
+            },
+            {
+                "question": "Which language is simple and easy to learn?",
+                "options": ["Python","Java","C++"],
+                "correct": "Python"
+            },
+            {
+                "question": "Who is the national award winner in 2023?",
+                "options": ["Ram Charan","Alluarjun","Samantha"],
+                "correct": "Ram Charan"
+            },
+            {
+                "question": "Which part of the Moon is Chandrayaan-3 landed?",
+                "options": ["South","North","Equator"],
+                "correct": "South"
+            }
+            
+        ]
+        
+        self.label = tk.Label(root, text="Welcome to the Quiz Game!", font=("Arial", 18))
+        self.label.pack(pady=20)
+        
+        self.start_button = tk.Button(root, text="Start", command=self.start_quiz)
+        self.start_button.pack()
+        
+        self.contribution_button = tk.Button(root, text="Contribute a Question", command=self.open_contribution_section)
+        self.contribution_button.pack()
+        
+        self.result_label = tk.Label(root, text="", font=("Arial", 14))
+        self.result_label.pack(pady=20)
+        
+        self.question_label = tk.Label(root, text="", font=("Arial", 14))
+        self.question_label.pack()
+        
+        self.answer_buttons = []
+        
+        self.contribution_label = tk.Label(root, text="Contribute a question:", font=("Arial", 14))
+        
+        self.contribution_question = tk.Entry(root, font=("Arial", 12))
+        
+        self.contribution_options_label = tk.Label(root, text="Enter options (comma-separated):", font=("Arial", 12))
+        
+        self.contribution_options = tk.Entry(root, font=("Arial", 12))
+        
+        self.contribution_correct_label = tk.Label(root, text="Enter correct answer:", font=("Arial", 12))
+        
+        self.contribution_correct = tk.Entry(root, font=("Arial", 12))
+        
+        self.submit_button = tk.Button(root, text="Submit", command=self.submit_question)
+        
+        self.contribution_section_open = False
+
+    def open_contribution_section(self):
+        if not self.contribution_section_open:
+            self.contribution_label.pack(pady=10)
+            self.contribution_question.pack()
+            self.contribution_options_label.pack(pady=5)
+            self.contribution_options.pack()
+            self.contribution_correct_label.pack(pady=5)
+            self.contribution_correct.pack()
+            self.submit_button.pack(pady=5)
+            self.contribution_section_open = True
+
+    def close_contribution_section(self):
+        if self.contribution_section_open:
+            self.contribution_label.pack_forget()
+            self.contribution_question.pack_forget()
+            self.contribution_options_label.pack_forget()
+            self.contribution_options.pack_forget()
+            self.contribution_correct_label.pack_forget()
+            self.contribution_correct.pack_forget()
+            self.submit_button.pack_forget()
+            self.contribution_section_open = False
+        
+    def start_quiz(self):
+        self.score = 0
+        self.current_question = 0
+        self.result_label.config(text="")
+        self.start_button.config(state=tk.DISABLED)
+        self.close_contribution_section()
+        self.display_question()
+        
+    def display_question(self):
+        if self.current_question < len(self.questions):
+            question_data = self.questions[self.current_question]
+            self.question_label.config(text=question_data["question"])
+            
+            for btn in self.answer_buttons:
+                btn.destroy()
+                
+            self.answer_buttons = []
+            
+            for option in question_data["options"]:
+                btn = tk.Button(self.root, text=option, command=lambda o=option: self.check_answer(o))
+                btn.pack(pady=5)
+                self.answer_buttons.append(btn)
+        else:
+            self.show_results()
+        
+    def check_answer(self, selected_answer):
+        question_data = self.questions[self.current_question]
+        correct_answer = question_data["correct"]
+        
+        if selected_answer == correct_answer:
+            self.score += 1
+            self.result_label.config(text="Correct!", fg="green")
+        else:
+            self.result_label.config(text="Incorrect. Correct answer: " + correct_answer, fg="red")
+            
+        self.current_question += 1
+        self.display_question()
+        
+    def show_results(self):
+        self.question_label.config(text="")
+        for btn in self.answer_buttons:
+            btn.destroy()
+        self.answer_buttons = []
+        
+        self.result_label.config(text=f"Quiz completed!\nYour score: {self.score}/{len(self.questions)}", fg="black")
+        self.start_button.config(text="Play Again", command=self.start_quiz, state=tk.NORMAL)
+        
+    def submit_question(self):
+        new_question = self.contribution_question.get()
+        options = self.contribution_options.get().split(",")
+        correct_answer = self.contribution_correct.get()
+        
+        if new_question and options and correct_answer:
+            self.questions.append({
+                "question": new_question,
+                "options": options,
+                "correct": correct_answer
+            })
+            messagebox.showinfo("Success", "Question submitted successfully!")
+            self.contribution_question.delete(0, tk.END)
+            self.contribution_options.delete(0, tk.END)
+            self.contribution_correct.delete(0, tk.END)
+        else:
+            messagebox.showwarning("Warning", "Please enter all fields to contribute a question.")
+        
+
+root = tk.Tk()
+app = QuizApp(root)
+root.mainloop()
